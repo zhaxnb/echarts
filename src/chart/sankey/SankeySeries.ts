@@ -19,6 +19,7 @@
 
 import SeriesModel from '../../model/Series';
 import createGraphFromNodeEdge from '../helper/createGraphFromNodeEdge';
+import createGraphDataFromDataset from '../helper/createGraphDataFromDataset';
 import Model from '../../model/Model';
 import {
     SeriesOption,
@@ -34,7 +35,8 @@ import {
     GraphEdgeItemObject,
     OptionDataValueNumeric,
     DefaultEmphasisFocus,
-    CallbackDataParams
+    CallbackDataParams,
+    SeriesEncodeOptionMixin
 } from '../../util/types';
 import GlobalModel from '../../model/Global';
 import SeriesData from '../../data/SeriesData';
@@ -92,10 +94,11 @@ export interface SankeyLevelOption extends SankeyNodeStateOption, SankeyEdgeStat
     depth: number
 }
 
-export interface SankeySeriesOption
-    extends SeriesOption<SankeyBothStateOption<CallbackDataParams>, ExtraStateOption>,
+export interface SankeySeriesOption extends
+    Omit<SeriesOption<SankeyBothStateOption<CallbackDataParams>, ExtraStateOption>, 'sankey'>,
     SankeyBothStateOption<CallbackDataParams>,
-    BoxLayoutOptionMixin {
+    BoxLayoutOptionMixin,
+    SeriesEncodeOptionMixin {
     type?: 'sankey'
 
     /**
@@ -174,6 +177,10 @@ class SankeySeriesModel extends SeriesModel<SankeySeriesOption> {
         }
         if (nodes && links) {
             const graph = createGraphFromNodeEdge(nodes, links, this, true, beforeLink);
+            return graph.data;
+        }
+        else {
+            const graph = createGraphDataFromDataset(this, true, beforeLink);
             return graph.data;
         }
         function beforeLink(nodeData: SeriesData, edgeData: SeriesData) {
